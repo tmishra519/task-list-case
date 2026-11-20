@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/tasks")
-public class TaskController {
+public class TaskWebController {
 
     @GetMapping
     public List<String> getTasks() {
