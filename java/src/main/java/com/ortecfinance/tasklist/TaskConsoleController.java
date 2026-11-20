@@ -7,6 +7,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -50,31 +52,41 @@ public final class TaskConsoleController implements Runnable {
     }
 
     private void execute(String commandLine) {
-        String[] commandRest = commandLine.split(" ", 2);
-        String command = commandRest[0];
-        switch (command) {
-            case "show":
-                show();
-                break;
-            case "add":
-                add(commandRest[1]);
-                break;
-            case "check":
-                taskListService.check(commandRest[1]);
-                break;
-            case "uncheck":
-                taskListService.uncheck(commandRest[1]);
-                break;
-            case "help":
-                help();
-                break;
-            default:
-                error(command);
-                break;
+        try {
+            String[] commandRest = commandLine.split(" ", 2);
+            String command = commandRest[0];
+            switch (command) {
+                case "show":
+                    show();
+                    break;
+                case "add":
+                    add(commandRest[1]);
+                    break;
+                case "check":
+                    check(commandRest[1]);
+                    break;
+                case "uncheck":
+                    uncheck(commandRest[1]);
+                    break;
+                case "deadline":
+                    addDeadline(commandRest[1]);
+                    break;
+                case "view-by-deadline":
+                    showByDeadline();
+                    break;
+                case "help":
+                    help();
+                    break;
+                default:
+                    error(command);
+                    break;
+            }
+        } catch (Exception e) {
+            out.println(e.getMessage());
         }
     }
 
-    private void add(String commandLine) {
+    private void add(String commandLine) throws Exception {
         String[] subcommandRest = commandLine.split(" ", 2);
         String subcommand = subcommandRest[0];
         if (subcommand.equals("project")) {
@@ -85,15 +97,45 @@ public final class TaskConsoleController implements Runnable {
         }
     }
 
+    private void check(String idString) throws Exception {
+        taskListService.check(getId(idString));
+    }
+
+    private void uncheck(String idString) throws Exception {
+        taskListService.uncheck(getId(idString));
+    }
+
     private void show() {
         var tasks = taskListService.getTasks();
         for (Map.Entry<String, List<Task>> project : tasks.entrySet()) {
             out.println(project.getKey());
             for (Task task : project.getValue()) {
-                out.printf(task.toString());
+                out.println(task.toString());
             }
             out.println();
         }
+    }
+
+    private void addDeadline(String commandLine) throws Exception {
+        String[] argumentList = commandLine.split(" ", 2);
+        Integer id = getId(argumentList[0]);
+        taskListService.addDeadline(id, argumentList[1]);
+    }
+
+    private void showByDeadline() {
+        Map<LocalDate, Map<String, List<Task>>> groupedTasks = taskListService.groupByDeadline();
+        groupedTasks.forEach((deadline, projectTasks) -> {
+                    String formattedDeadline = deadline == null ? "No Deadline" :
+                            deadline.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                    out.println(formattedDeadline);
+                    projectTasks.forEach((project, tasks) -> {
+                        out.println("\t" + project);
+                        tasks.forEach(
+                                (task) -> out.println("\t" + task.toString())
+                        );
+                    });
+                }
+        );
     }
 
     private void help() {
@@ -103,6 +145,8 @@ public final class TaskConsoleController implements Runnable {
         out.println("  add task <project name> <task description>");
         out.println("  check <task ID>");
         out.println("  uncheck <task ID>");
+        out.println("  deadline <task ID> <dd-MM-yyyy>");
+        out.println("  view-by-deadline");
         out.println();
     }
 
@@ -111,5 +155,12 @@ public final class TaskConsoleController implements Runnable {
         out.println();
     }
 
+    private int getId(String idString) throws Exception {
+        try {
+            return Integer.parseInt(idString);
+        } catch (NumberFormatException e) {
+            throw new Exception("Could not find a task with an ID of " + idString);
+        }
+    }
 
 }

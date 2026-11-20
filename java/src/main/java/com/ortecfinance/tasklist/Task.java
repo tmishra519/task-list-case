@@ -1,14 +1,26 @@
 package com.ortecfinance.tasklist;
 
+import java.time.LocalDate;
+
 public final class Task {
     private final long id;
     private final String description;
     private boolean done;
+    private LocalDate deadline;
 
-    public Task(long id, String description, boolean done) {
+    public Task(long id, String description, boolean done, LocalDate deadline) {
         this.id = id;
         this.description = description;
         this.done = done;
+        this.deadline = deadline;
+    }
+
+    public LocalDate getDeadline() {
+        return deadline;
+    }
+
+    public void setDeadline(LocalDate deadline) {
+        this.deadline = deadline;
     }
 
     public long getId() {
@@ -28,6 +40,6 @@ public final class Task {
     }
 
     public String toString() {
-        return "    [" + this.isDone() + "] " + this.getId() + ": " + this.getDescription();
+        return "    [" + (this.isDone() ? "x" : " ") + "] " + this.getId() + ": " + this.getDescription();
     }
 }
