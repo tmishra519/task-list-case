@@ -16,13 +16,19 @@ public class TaskListService {
         return tasks;
     }
 
+    public Map<String, List<String>> getTasksByProject() {
+        Map<String, List<String>> response = new LinkedHashMap<>();
+        tasks.forEach((project, projectTasks) -> response.put(project, projectTasks.stream().map(Task::toString).toList()));
+        return response;
+    }
+
     public void addProject(String name) {
         tasks.put(name, new ArrayList<>());
     }
 
     public void addTask(String project, String description) throws Exception {
         if (tasks.isEmpty() || tasks.get(project) == null) {
-              throw new Exception("Could not find a project with the name " + project);
+            throw new Exception("Could not find a project with the name " + project);
         }
         List<Task> projectTasks = tasks.get(project);
         projectTasks.add(new Task(nextId(), description, false, null));
@@ -34,6 +40,18 @@ public class TaskListService {
 
     public void uncheck(Integer id) throws Exception {
         setDone(id, false);
+    }
+
+    private void setDone(Integer id, boolean done) throws Exception {
+        for (Map.Entry<String, List<Task>> project : tasks.entrySet()) {
+            for (Task task : project.getValue()) {
+                if (task.getId() == id) {
+                    task.setDone(done);
+                    return;
+                }
+            }
+        }
+        throw new Exception("Could not find a task with an ID of " + id);
     }
 
     public void addDeadline(Integer id, String deadline) throws Exception {
@@ -49,31 +67,22 @@ public class TaskListService {
         throw new Exception("Could not find a task with an ID of " + id);
     }
 
-    public Map<LocalDate, Map<String, List<Task>>> groupByDeadline() {
-        Map<LocalDate, Map<String, List<Task>>> groupedTasks =
-                new TreeMap<>(Comparator.nullsLast(Comparator.naturalOrder()));
+    public Map<LocalDate, Map<String, List<String>>> groupTasksByDeadlineAndProject() {
+        Map<LocalDate, Map<String, List<String>>> groupedTasks = new TreeMap<>(Comparator.nullsLast(Comparator.naturalOrder()));
 
         tasks.forEach((project, projectTasks) -> {
             projectTasks.forEach(task -> {
                 groupedTasks
                         .computeIfAbsent(task.getDeadline(), k -> new LinkedHashMap<>())
                         .computeIfAbsent(project, k -> new ArrayList<>())
-                        .add(task);
+                        .add(task.toStringWithoutCheckbox());
             });
         });
         return groupedTasks;
     }
 
-    private void setDone(Integer id, boolean done) throws Exception {
-        for (Map.Entry<String, List<Task>> project : tasks.entrySet()) {
-            for (Task task : project.getValue()) {
-                if (task.getId() == id) {
-                    task.setDone(done);
-                    return;
-                }
-            }
-        }
-        throw new Exception("Could not find a task with an ID of " + id);
+    public Map<String, List<String>> getTasksForDeadline(LocalDate deadline) {
+        return groupTasksByDeadlineAndProject().get(deadline);
     }
 
     private long nextId() {

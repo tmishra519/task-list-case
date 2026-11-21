@@ -42,4 +42,8 @@ public final class Task {
     public String toString() {
         return "    [" + (this.isDone() ? "x" : " ") + "] " + this.getId() + ": " + this.getDescription();
     }
+
+    public String toStringWithoutCheckbox() {
+        return "    " + this.getId() + ": " + this.getDescription();
+    }
 }

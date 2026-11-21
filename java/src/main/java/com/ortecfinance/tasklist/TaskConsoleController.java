@@ -74,6 +74,9 @@ public final class TaskConsoleController implements Runnable {
                 case "view-by-deadline":
                     showByDeadline();
                     break;
+                case "today":
+                    getTasksWithDeadlineToday();
+                    break;
                 case "help":
                     help();
                     break;
@@ -106,12 +109,10 @@ public final class TaskConsoleController implements Runnable {
     }
 
     private void show() {
-        var tasks = taskListService.getTasks();
-        for (Map.Entry<String, List<Task>> project : tasks.entrySet()) {
+        var tasks = taskListService.getTasksByProject();
+        for (Map.Entry<String, List<String>> project : tasks.entrySet()) {
             out.println(project.getKey());
-            for (Task task : project.getValue()) {
-                out.println(task.toString());
-            }
+            project.getValue().forEach(out::println);
             out.println();
         }
     }
@@ -123,7 +124,7 @@ public final class TaskConsoleController implements Runnable {
     }
 
     private void showByDeadline() {
-        Map<LocalDate, Map<String, List<Task>>> groupedTasks = taskListService.groupByDeadline();
+        Map<LocalDate, Map<String, List<String>>> groupedTasks = taskListService.groupTasksByDeadlineAndProject();
         groupedTasks.forEach((deadline, projectTasks) -> {
                     String formattedDeadline = deadline == null ? "No Deadline" :
                             deadline.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
@@ -131,11 +132,26 @@ public final class TaskConsoleController implements Runnable {
                     projectTasks.forEach((project, tasks) -> {
                         out.println("\t" + project);
                         tasks.forEach(
-                                (task) -> out.println("\t" + task.toString())
+                                (task) -> out.println("\t" + task)
                         );
                     });
                 }
         );
+    }
+
+    private void getTasksWithDeadlineToday() {
+        var tasksWithDeadlineToday = taskListService.getTasksForDeadline(LocalDate.now());
+
+        if (tasksWithDeadlineToday == null) {
+            out.println("No tasks with deadline today");
+        } else {
+            tasksWithDeadlineToday.forEach((k, v) -> {
+                        out.println(k);
+                        v.forEach(out::println);
+                        out.println();
+                    }
+            );
+        }
     }
 
     private void help() {
@@ -147,6 +163,7 @@ public final class TaskConsoleController implements Runnable {
         out.println("  uncheck <task ID>");
         out.println("  deadline <task ID> <dd-MM-yyyy>");
         out.println("  view-by-deadline");
+        out.println("  today");
         out.println();
     }
 
@@ -159,7 +176,7 @@ public final class TaskConsoleController implements Runnable {
         try {
             return Integer.parseInt(idString);
         } catch (NumberFormatException e) {
-            throw new Exception("Could not find a task with an ID of " + idString);
+            throw new Exception("Could not parse the id " + idString);
         }
     }
 
