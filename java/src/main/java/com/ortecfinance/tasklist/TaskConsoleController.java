@@ -89,7 +89,12 @@ public final class TaskConsoleController implements Runnable {
         }
     }
 
-    private void add(String commandLine) throws Exception {
+    /**
+     * Parse arguments and call intended target
+     * @param commandLine - user input
+     * @throws InvalidIdException - exception thrown when task id is invalid
+     */
+    private void add(String commandLine) throws InvalidIdException {
         String[] subcommandRest = commandLine.split(" ", 2);
         String subcommand = subcommandRest[0];
         if (subcommand.equals("project")) {
@@ -100,14 +105,29 @@ public final class TaskConsoleController implements Runnable {
         }
     }
 
-    private void check(String idString) throws Exception {
+    /**
+     * Mark task as done
+     * @param idString - id of task
+     * @throws InvalidIdException - In case task id is invalid
+     * @throws NumberFormatException - In case id can't be parsed to a number
+     */
+    private void check(String idString) throws InvalidIdException, NumberFormatException {
         taskListService.check(getId(idString));
     }
 
-    private void uncheck(String idString) throws Exception {
+    /**
+     * Mark task as not done
+     * @param idString - id of task
+     * @throws InvalidIdException - In case task id is invalid
+     * @throws NumberFormatException - In case id can't be parsed to a number
+     */
+    private void uncheck(String idString) throws InvalidIdException, NumberFormatException  {
         taskListService.uncheck(getId(idString));
     }
 
+    /**
+     * Display all tasks grouped by deadline
+     */
     private void show() {
         var tasks = taskListService.getTasksByProject();
         for (Map.Entry<String, List<String>> project : tasks.entrySet()) {
@@ -117,12 +137,21 @@ public final class TaskConsoleController implements Runnable {
         }
     }
 
-    private void addDeadline(String commandLine) throws Exception {
+    /**
+     *
+     * @param commandLine - argument with task id and deadline
+     * @throws NumberFormatException - In case the date format is invalid.
+     * @throws InvalidIdException - In case the task is not valid.
+     */
+    private void addDeadline(String commandLine) throws NumberFormatException, InvalidIdException {
         String[] argumentList = commandLine.split(" ", 2);
         Integer id = getId(argumentList[0]);
         taskListService.addDeadline(id, argumentList[1]);
     }
 
+    /**
+     * Method to display tasks grouped by deadline then project
+     */
     private void showByDeadline() {
         Map<LocalDate, Map<String, List<String>>> groupedTasks = taskListService.groupTasksByDeadlineAndProject();
         groupedTasks.forEach((deadline, projectTasks) -> {
@@ -139,6 +168,9 @@ public final class TaskConsoleController implements Runnable {
         );
     }
 
+    /**
+     * Display all tasks that have a deadline set to today
+     */
     private void getTasksWithDeadlineToday() {
         var tasksWithDeadlineToday = taskListService.getTasksForDeadline(LocalDate.now());
 
@@ -154,6 +186,9 @@ public final class TaskConsoleController implements Runnable {
         }
     }
 
+    /**
+     * List all available commands
+     */
     private void help() {
         out.println("Commands:");
         out.println("  show");
@@ -167,16 +202,26 @@ public final class TaskConsoleController implements Runnable {
         out.println();
     }
 
+    /**
+     * Error when command not found
+     * @param command - user input command
+     */
     private void error(String command) {
         out.printf("I don't know what the command \"%s\" is.", command);
         out.println();
     }
 
-    private int getId(String idString) throws Exception {
+    /**
+     * Get numerical id from String
+     * @param idString - id as string
+     * @return - id as number
+     * @throws NumberFormatException - If not able to parse the id
+     */
+    private int getId(String idString) throws NumberFormatException {
         try {
             return Integer.parseInt(idString);
         } catch (NumberFormatException e) {
-            throw new Exception("Could not parse the id " + idString);
+            throw new NumberFormatException("Could not parse the id " + idString);
         }
     }
 
