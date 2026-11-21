@@ -16,8 +16,7 @@ public class TaskListApplication {
             System.out.println("Starting console Application");
             TaskConsoleController controller = context.getBean(TaskConsoleController.class);
             controller.run();
-        }
-        else {
+        } else {
             System.out.println("localhost:8080/tasks");
         }
     }
