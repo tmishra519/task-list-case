@@ -159,8 +159,8 @@ public final class TaskConsoleController implements Runnable {
         groupedTasks.forEach((deadline, projectTasks) -> {
                     out.println(deadline);
                     projectTasks.forEach((project, tasks) -> {
-                        out.println("\t" + project);
-                        tasks.forEach(t -> out.println("\t\t" + t));
+                        out.println("    " + project);
+                        tasks.forEach(t -> out.println("        " + t));
                     });
                 }
         );
@@ -177,7 +177,7 @@ public final class TaskConsoleController implements Runnable {
         } else {
             tasksWithDeadlineToday.forEach((project, tasks) -> {
                         out.println(project);
-                        tasks.forEach(t -> out.println("\t\t" + t));
+                        tasks.forEach(t -> out.println("        " + t));
                         out.println();
                     }
             );

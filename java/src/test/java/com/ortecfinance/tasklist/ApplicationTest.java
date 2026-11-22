@@ -5,6 +5,7 @@ import org.junit.jupiter.api.*;
 import java.io.*;
 
 import static java.lang.System.lineSeparator;
+import static java.lang.System.out;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -92,6 +93,31 @@ public final class ApplicationTest {
                 ""
         );
 
+        execute("deadline 1 12-12-2026");
+        execute("deadline 4 12-12-2026");
+        execute("deadline 7 25-11-2026");
+
+        execute("view-by-deadline");
+
+        readLines(
+                "25-11-2026",
+                "    training",
+                "        7: Outside-In TDD",
+                "12-12-2026",
+                "    secrets",
+                "        1: Eat more donuts.",
+                "    training",
+                "        4: SOLID",
+                "No Deadline",
+                "    secrets",
+                "        2: Destroy all humans.",
+                "    training",
+                "        3: Four Elements of Simple Design",
+                "        5: Coupling and Cohesion",
+                "        6: Primitive Obsession",
+                "        8: Interaction-Driven Design"
+        );
+
         execute("quit");
     }
 
@@ -104,6 +130,7 @@ public final class ApplicationTest {
         int length = expectedOutput.length();
         char[] buffer = new char[length];
         outReader.read(buffer, 0, length);
+        out.println(String.valueOf(buffer));
         assertThat(String.valueOf(buffer), is(expectedOutput));
     }
 
