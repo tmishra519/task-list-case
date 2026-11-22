@@ -94,7 +94,6 @@ public final class TaskConsoleController implements Runnable {
 
     /**
      * Parse arguments and call intended target
-     *
      * @param commandLine - user input
      * @throws InvalidIdException - exception thrown when task id is invalid
      */
@@ -111,9 +110,8 @@ public final class TaskConsoleController implements Runnable {
 
     /**
      * Mark task as done
-     *
      * @param idString - id of task
-     * @throws InvalidIdException    - In case task id is invalid
+     * @throws InvalidIdException - In case task id is invalid
      * @throws NumberFormatException - In case id can't be parsed to a number
      */
     private void check(String idString) throws InvalidIdException, NumberFormatException {
@@ -124,10 +122,10 @@ public final class TaskConsoleController implements Runnable {
      * Mark task as not done
      *
      * @param idString - id of task
-     * @throws InvalidIdException    - In case task id is invalid
+     * @throws InvalidIdException - In case task id is invalid
      * @throws NumberFormatException - In case id can't be parsed to a number
      */
-    private void uncheck(String idString) throws InvalidIdException, NumberFormatException {
+    private void uncheck(String idString) throws InvalidIdException, NumberFormatException  {
         taskListService.uncheck(getId(idString));
     }
 
