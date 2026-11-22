@@ -25,7 +25,7 @@ public class TaskListService {
      *
      * @return Map with key=project, value=list of task details as strings
      */
-    public Map<String, List<String>> getTasksByProject() {
+    public Map<String, List<String>> getFormattedTasksByProject() {
         Map<String, List<String>> response = new LinkedHashMap<>();
         tasks.forEach((project, projectTasks) ->
                 response.put(project, projectTasks.stream().map(Task::toString).toList()));
@@ -121,18 +121,39 @@ public class TaskListService {
      *
      * @return - tasks grouped by deadline and project
      */
-    public Map<LocalDate, Map<String, List<String>>> groupTasksByDeadlineAndProject() {
-        Map<LocalDate, Map<String, List<String>>> groupedTasks = new TreeMap<>(Comparator.nullsLast(Comparator.naturalOrder()));
+    private Map<LocalDate, Map<String, List<Task>>> groupTasksByDeadlineAndProject() {
+        Map<LocalDate, Map<String, List<Task>>> groupedTasks = new TreeMap<>(Comparator.nullsLast(Comparator.naturalOrder()));
 
         tasks.forEach((project, projectTasks) -> {
             projectTasks.forEach(task -> {
                 groupedTasks
                         .computeIfAbsent(task.getDeadline(), k -> new LinkedHashMap<>())
                         .computeIfAbsent(project, k -> new ArrayList<>())
-                        .add(task.toStringWithoutCheckbox());
+                        .add(task);
             });
         });
         return groupedTasks;
+    }
+
+    /**
+     * Method to format tasks as string and deadline as date/"No deadline"
+     * @return - formatted tasks grouped by deadline then project
+     */
+    public Map<String, Map<String, List<String>>> getFormattedTasksByDeadlineAndProject() {
+        Map<LocalDate, Map<String, List<Task>>> groupedTasks = groupTasksByDeadlineAndProject();
+        Map<String, Map<String, List<String>>> formattedTasks = new LinkedHashMap<>();
+
+        groupedTasks.forEach((deadline, projectTasks) -> {
+                    String formattedDeadline = deadline == null ? "No Deadline" :
+                            deadline.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                    Map<String, List<String>> formattedProjectTasks = new LinkedHashMap<>();
+                    projectTasks.forEach((project, tasks) -> {
+                        formattedProjectTasks.put(project, tasks.stream().map(Task::toStringWithoutCheckbox).toList());
+                    });
+                    formattedTasks.put(formattedDeadline, formattedProjectTasks);
+                }
+        );
+        return formattedTasks;
     }
 
     /**
@@ -142,7 +163,8 @@ public class TaskListService {
      * @return - list of tasks with this deadline
      */
     public Map<String, List<String>> getTasksForDeadline(LocalDate deadline) {
-        return groupTasksByDeadlineAndProject().get(deadline);
+        String deadlineStr = deadline.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        return getFormattedTasksByDeadlineAndProject().get(deadlineStr);
     }
 
     /**

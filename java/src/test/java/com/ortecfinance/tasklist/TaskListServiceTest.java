@@ -26,7 +26,7 @@ public class TaskListServiceTest {
     @Test
     void shouldAddProject() {
         taskListService.addProject("Project1");
-        assertTrue(taskListService.getTasks().containsKey("Project1"));
+        assertTrue(taskListService.getFormattedTasksByProject().containsKey("Project1"));
     }
 
     @Test
@@ -102,25 +102,21 @@ public class TaskListServiceTest {
     @Test
     void shouldGroupByDeadlineAndProject() throws Exception {
         initTestData();
-        var tasksGroupedByDeadlineAndProject = taskListService.groupTasksByDeadlineAndProject();
+        var tasksGroupedByDeadlineAndProject = taskListService.getFormattedTasksByDeadlineAndProject();
 
-        assertTrue(tasksGroupedByDeadlineAndProject.containsKey(
-                LocalDate.parse("10-12-2026", DateTimeFormatter.ofPattern("dd-MM-yyyy"))));
-        assertTrue(tasksGroupedByDeadlineAndProject.containsKey(
-                LocalDate.parse("15-12-2026", DateTimeFormatter.ofPattern("dd-MM-yyyy"))));
-        assertTrue(tasksGroupedByDeadlineAndProject.containsKey(
-                LocalDate.parse("20-12-2026", DateTimeFormatter.ofPattern("dd-MM-yyyy"))));
+        assertTrue(tasksGroupedByDeadlineAndProject.containsKey("10-12-2026"));
+        assertTrue(tasksGroupedByDeadlineAndProject.containsKey("15-12-2026"));
+        assertTrue(tasksGroupedByDeadlineAndProject.containsKey("20-12-2026"));
 
-        var mapEntry = tasksGroupedByDeadlineAndProject.get(
-                LocalDate.parse("10-12-2026", DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+        var mapEntry = tasksGroupedByDeadlineAndProject.get("10-12-2026");
 
         assertTrue(mapEntry.containsKey("ProjectA"));
         assertTrue(mapEntry.containsKey("ProjectB"));
         assertEquals(1, mapEntry.get("ProjectA").size());
         assertEquals(1, mapEntry.get("ProjectB").size());
 
-        assertEquals(1, tasksGroupedByDeadlineAndProject.get(null).get("ProjectA").size());
-        assertEquals(1, tasksGroupedByDeadlineAndProject.get(null).get("ProjectC").size());
+        assertEquals(1, tasksGroupedByDeadlineAndProject.get("No Deadline").get("ProjectA").size());
+        assertEquals(1, tasksGroupedByDeadlineAndProject.get("No Deadline").get("ProjectC").size());
     }
 
     @Test

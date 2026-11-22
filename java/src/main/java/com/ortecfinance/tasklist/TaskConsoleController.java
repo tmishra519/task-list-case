@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -133,7 +132,7 @@ public final class TaskConsoleController implements Runnable {
      * Display all tasks grouped by deadline
      */
     private void show() {
-        var tasks = taskListService.getTasksByProject();
+        var tasks = taskListService.getFormattedTasksByProject();
         for (Map.Entry<String, List<String>> project : tasks.entrySet()) {
             out.println(project.getKey());
             project.getValue().forEach(out::println);
@@ -156,16 +155,12 @@ public final class TaskConsoleController implements Runnable {
      * Method to display tasks grouped by deadline then project
      */
     private void showByDeadline() {
-        Map<LocalDate, Map<String, List<String>>> groupedTasks = taskListService.groupTasksByDeadlineAndProject();
+        Map<String, Map<String, List<String>>> groupedTasks = taskListService.getFormattedTasksByDeadlineAndProject();
         groupedTasks.forEach((deadline, projectTasks) -> {
-                    String formattedDeadline = deadline == null ? "No Deadline" :
-                            deadline.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-                    out.println(formattedDeadline);
+                    out.println(deadline);
                     projectTasks.forEach((project, tasks) -> {
                         out.println("\t" + project);
-                        tasks.forEach(
-                                (task) -> out.println("\t" + task)
-                        );
+                        tasks.forEach(t -> out.println("\t\t" + t));
                     });
                 }
         );
@@ -180,9 +175,9 @@ public final class TaskConsoleController implements Runnable {
         if (tasksWithDeadlineToday == null) {
             out.println("No tasks with deadline today");
         } else {
-            tasksWithDeadlineToday.forEach((k, v) -> {
-                        out.println(k);
-                        v.forEach(out::println);
+            tasksWithDeadlineToday.forEach((project, tasks) -> {
+                        out.println(project);
+                        tasks.forEach(t -> out.println("\t\t" + t));
                         out.println();
                     }
             );
