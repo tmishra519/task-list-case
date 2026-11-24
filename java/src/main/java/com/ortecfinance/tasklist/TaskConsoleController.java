@@ -92,7 +92,8 @@ public final class TaskConsoleController implements Runnable {
     }
 
     /**
-     * Parse arguments and call intended target
+     * Parse arguments and add project or task
+     *
      * @param commandLine - user input
      * @throws InvalidIdException - exception thrown when task id is invalid
      */
@@ -109,8 +110,9 @@ public final class TaskConsoleController implements Runnable {
 
     /**
      * Mark task as done
+     *
      * @param idString - id of task
-     * @throws InvalidIdException - In case task id is invalid
+     * @throws InvalidIdException    - In case task id is invalid
      * @throws NumberFormatException - In case id can't be parsed to a number
      */
     private void check(String idString) throws InvalidIdException, NumberFormatException {
@@ -121,15 +123,15 @@ public final class TaskConsoleController implements Runnable {
      * Mark task as not done
      *
      * @param idString - id of task
-     * @throws InvalidIdException - In case task id is invalid
+     * @throws InvalidIdException    - In case task id is invalid
      * @throws NumberFormatException - In case id can't be parsed to a number
      */
-    private void uncheck(String idString) throws InvalidIdException, NumberFormatException  {
+    private void uncheck(String idString) throws InvalidIdException, NumberFormatException {
         taskListService.uncheck(getId(idString));
     }
 
     /**
-     * Display all tasks grouped by deadline
+     * Display all tasks grouped by project
      */
     private void show() {
         var tasks = taskListService.getFormattedTasksByProject();
@@ -147,7 +149,7 @@ public final class TaskConsoleController implements Runnable {
      */
     private void addDeadline(String commandLine) throws NumberFormatException, InvalidIdException {
         String[] argumentList = commandLine.split(" ", 2);
-        Integer id = getId(argumentList[0]);
+        Long id = getId(argumentList[0]);
         taskListService.addDeadline(id, argumentList[1]);
     }
 
@@ -201,7 +203,7 @@ public final class TaskConsoleController implements Runnable {
     }
 
     /**
-     * Error when command not found
+     * Display error when a command is not found
      *
      * @param command - user input command
      */
@@ -211,15 +213,15 @@ public final class TaskConsoleController implements Runnable {
     }
 
     /**
-     * Get numerical id from String
+     * Get numerical id from string id
      *
      * @param idString - id as string
-     * @return - id as number
+     * @return - id as Long
      * @throws NumberFormatException - If not able to parse the id
      */
-    private int getId(String idString) throws NumberFormatException {
+    private Long getId(String idString) throws NumberFormatException {
         try {
-            return Integer.parseInt(idString);
+            return Long.parseLong(idString);
         } catch (NumberFormatException e) {
             throw new NumberFormatException("Could not parse the id " + idString);
         }

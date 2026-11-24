@@ -1,11 +1,12 @@
 package com.ortecfinance.tasklist;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.*;
 
 import static java.lang.System.lineSeparator;
-import static java.lang.System.out;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -17,7 +18,7 @@ public final class ApplicationTest {
     private final PipedInputStream outStream = new PipedInputStream();
     private final BufferedReader outReader = new BufferedReader(new InputStreamReader(outStream));
 
-    private Thread applicationThread;
+    private final Thread applicationThread;
 
     public ApplicationTest() throws IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(new PipedInputStream(inStream)));
@@ -34,13 +35,13 @@ public final class ApplicationTest {
     }
 
     @AfterEach
-    public void kill_the_application() throws IOException, InterruptedException {
-        if (!stillRunning()) {
+    public void kill_the_application() throws InterruptedException {
+        if (notRunning()) {
             return;
         }
 
         Thread.sleep(1000);
-        if (!stillRunning()) {
+        if (notRunning()) {
             return;
         }
 
@@ -58,10 +59,10 @@ public final class ApplicationTest {
 
         execute("show");
         readLines(
-            "secrets",
-            "    [ ] 1: Eat more donuts.",
-            "    [ ] 2: Destroy all humans.",
-            ""
+                "secrets",
+                "    [ ] 1: Eat more donuts.",
+                "    [ ] 2: Destroy all humans.",
+                ""
         );
 
         execute("add project training");
@@ -130,7 +131,6 @@ public final class ApplicationTest {
         int length = expectedOutput.length();
         char[] buffer = new char[length];
         outReader.read(buffer, 0, length);
-        out.println(String.valueOf(buffer));
         assertThat(String.valueOf(buffer), is(expectedOutput));
     }
 
@@ -144,7 +144,7 @@ public final class ApplicationTest {
         inWriter.println(input);
     }
 
-    private boolean stillRunning() {
-        return applicationThread != null && applicationThread.isAlive();
+    private boolean notRunning() {
+        return !applicationThread.isAlive();
     }
 }

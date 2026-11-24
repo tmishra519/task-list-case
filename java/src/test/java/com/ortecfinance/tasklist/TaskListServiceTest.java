@@ -49,7 +49,7 @@ public class TaskListServiceTest {
     void shouldCheckTask() {
         taskListService.addProject("Project1");
         assertDoesNotThrow(() -> taskListService.addTask("Project1", "Task1"));
-        assertDoesNotThrow(() -> taskListService.check(1));
+        assertDoesNotThrow(() -> taskListService.check(1L));
         assertTrue(taskListService.getTasks().get("Project1").getFirst().isDone());
     }
 
@@ -57,8 +57,8 @@ public class TaskListServiceTest {
     void shouldUncheckTask() {
         taskListService.addProject("Project1");
         assertDoesNotThrow(() -> taskListService.addTask("Project1", "Task1"));
-        assertDoesNotThrow(() -> taskListService.check(1));
-        assertDoesNotThrow(() -> taskListService.uncheck(1));
+        assertDoesNotThrow(() -> taskListService.check(1L));
+        assertDoesNotThrow(() -> taskListService.uncheck(1L));
         assertFalse(taskListService.getTasks().get("Project1").getFirst().isDone());
     }
 
@@ -66,37 +66,37 @@ public class TaskListServiceTest {
     void shouldThrowExceptionWhenTaskNotFoundOnCheck() {
         taskListService.addProject("Project1");
         assertDoesNotThrow(() -> taskListService.addTask("Project1", "Task1"));
-        assertThrows(Exception.class, () -> taskListService.check(2));
+        assertThrows(Exception.class, () -> taskListService.check(2L));
     }
 
     @Test
     void shouldThrowExceptionWhenTaskNotFoundOnUncheck() {
         taskListService.addProject("Project1");
         assertDoesNotThrow(() -> taskListService.addTask("Project1", "Task1"));
-        assertThrows(Exception.class, () -> taskListService.uncheck(2));
+        assertThrows(Exception.class, () -> taskListService.uncheck(2L));
     }
 
     @Test
     void shouldAddDeadline() {
         taskListService.addProject("Project1");
         assertDoesNotThrow(() -> taskListService.addTask("Project1", "Task1"));
-        assertDoesNotThrow(() -> taskListService.addDeadline(1, "12-12-2025"));
+        assertDoesNotThrow(() -> taskListService.addDeadline(1L, "12-12-2025"));
         assertEquals("12-12-2025", taskListService.getTasks().get("Project1").getFirst().getDeadline()
-                .format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+                .format(DateTimeFormatter.ofPattern(taskListService.DATE_FORMAT)));
     }
 
     @Test
     void shouldThrowExceptionWhenTaskNotFoundOnAddingDeadline() {
         taskListService.addProject("Project1");
         assertDoesNotThrow(() -> taskListService.addTask("Project1", "Task1"));
-        assertThrows(Exception.class, () -> taskListService.addDeadline(2, "12-12-2025"));
+        assertThrows(Exception.class, () -> taskListService.addDeadline(2L, "12-12-2025"));
     }
 
     @Test
     void shouldThrowExceptionWhenInvalidDateOnAddingDeadline() {
         taskListService.addProject("Project1");
         assertDoesNotThrow(() -> taskListService.addTask("Project1", "Task1"));
-        assertThrows(Exception.class, () -> taskListService.addDeadline(1, "78-12-2025"));
+        assertThrows(Exception.class, () -> taskListService.addDeadline(1L, "78-12-2025"));
     }
 
     @Test
@@ -123,9 +123,9 @@ public class TaskListServiceTest {
     void shouldGetTasksForDeadline() throws Exception {
         initTestData();
         assertNotNull(taskListService.getTasksForDeadline(
-                LocalDate.parse("10-12-2026", DateTimeFormatter.ofPattern("dd-MM-yyyy"))));
+                LocalDate.parse("10-12-2026", DateTimeFormatter.ofPattern(taskListService.DATE_FORMAT))));
         assertNull(taskListService.getTasksForDeadline(
-                LocalDate.parse("10-12-2028", DateTimeFormatter.ofPattern("dd-MM-yyyy"))));
+                LocalDate.parse("10-12-2028", DateTimeFormatter.ofPattern(taskListService.DATE_FORMAT))));
 
     }
 
@@ -144,11 +144,11 @@ public class TaskListServiceTest {
         taskListService.addTask("ProjectC", "Write documentation");
 
         // Same deadline across two projects
-        taskListService.addDeadline(1, "10-12-2026");
-        taskListService.addDeadline(4, "10-12-2026");
+        taskListService.addDeadline(1L, "10-12-2026");
+        taskListService.addDeadline(4L, "10-12-2026");
 
-        taskListService.addDeadline(2, "15-12-2026");
-        taskListService.addDeadline(5, "20-12-2026");
+        taskListService.addDeadline(2L, "15-12-2026");
+        taskListService.addDeadline(5L, "20-12-2026");
     }
 
 

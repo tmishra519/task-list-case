@@ -60,7 +60,7 @@ public class TaskWebController {
     }
 
     @PutMapping("/projects/{project_id}/tasks/{task_id}")
-    public ResponseEntity<String> addDeadline(@PathVariable String project_id, @PathVariable Integer task_id,
+    public ResponseEntity<String> addDeadline(@PathVariable String project_id, @PathVariable Long task_id,
                                               @RequestParam String deadline) {
         try {
             taskListService.addDeadline(task_id, deadline);

@@ -14,6 +14,7 @@ import java.util.*;
 public class TaskListService {
 
     private final Map<String, List<Task>> tasks = new LinkedHashMap<>();
+    String DATE_FORMAT = "dd-MM-yyyy";
     private long lastId = 0;
 
     public Map<String, List<Task>> getTasks() {
@@ -62,7 +63,7 @@ public class TaskListService {
      * @param id - id of task to be updated
      * @throws InvalidIdException - In case the task id is not valid
      */
-    public void check(Integer id) throws InvalidIdException {
+    public void check(Long id) throws InvalidIdException {
         setDone(id, true);
     }
 
@@ -72,7 +73,7 @@ public class TaskListService {
      * @param id - id of task to be updated
      * @throws InvalidIdException - In case the task id is not valid
      */
-    public void uncheck(Integer id) throws InvalidIdException {
+    public void uncheck(Long id) throws InvalidIdException {
         setDone(id, false);
     }
 
@@ -83,7 +84,7 @@ public class TaskListService {
      * @param done - true/false - is task completed?
      * @throws InvalidIdException - In case the task id is not valid
      */
-    private void setDone(Integer id, boolean done) throws InvalidIdException {
+    private void setDone(Long id, boolean done) throws InvalidIdException {
         for (Map.Entry<String, List<Task>> project : tasks.entrySet()) {
             for (Task task : project.getValue()) {
                 if (task.getId() == id) {
@@ -103,8 +104,8 @@ public class TaskListService {
      * @throws InvalidIdException     - In case the task id is not valid
      * @throws DateTimeParseException - In case the date is in an invalid format
      */
-    public void addDeadline(Integer id, String deadline) throws InvalidIdException, DateTimeParseException {
-        LocalDate date = LocalDate.parse(deadline, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+    public void addDeadline(Long id, String deadline) throws InvalidIdException, DateTimeParseException {
+        LocalDate date = LocalDate.parse(deadline, DateTimeFormatter.ofPattern(DATE_FORMAT));
         for (Map.Entry<String, List<Task>> project : tasks.entrySet()) {
             for (Task task : project.getValue()) {
                 if (task.getId() == id) {
@@ -122,21 +123,23 @@ public class TaskListService {
      * @return - tasks grouped by deadline and project
      */
     private Map<LocalDate, Map<String, List<Task>>> groupTasksByDeadlineAndProject() {
-        Map<LocalDate, Map<String, List<Task>>> groupedTasks = new TreeMap<>(Comparator.nullsLast(Comparator.naturalOrder()));
+        Map<LocalDate, Map<String, List<Task>>> groupedTasks =
+                new TreeMap<>(Comparator.nullsLast(Comparator.naturalOrder()));
 
-        tasks.forEach((project, projectTasks) -> {
-            projectTasks.forEach(task -> {
-                groupedTasks
-                        .computeIfAbsent(task.getDeadline(), k -> new LinkedHashMap<>())
-                        .computeIfAbsent(project, k -> new ArrayList<>())
-                        .add(task);
-            });
-        });
+        tasks.forEach((project, projectTasks) ->
+                projectTasks.forEach(task ->
+                        groupedTasks
+                                .computeIfAbsent(task.getDeadline(), k -> new LinkedHashMap<>())
+                                .computeIfAbsent(project, k -> new ArrayList<>())
+                                .add(task)
+                )
+        );
         return groupedTasks;
     }
 
     /**
-     * Method to format tasks as string and deadline as date/"No deadline"
+     * Method to format tasks as string and deadline as date/"No deadline" in case of null deadline
+     *
      * @return - formatted tasks grouped by deadline then project
      */
     public Map<String, Map<String, List<String>>> getFormattedTasksByDeadlineAndProject() {
@@ -145,11 +148,11 @@ public class TaskListService {
 
         groupedTasks.forEach((deadline, projectTasks) -> {
                     String formattedDeadline = deadline == null ? "No Deadline" :
-                            deadline.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                            deadline.format(DateTimeFormatter.ofPattern(DATE_FORMAT));
                     Map<String, List<String>> formattedProjectTasks = new LinkedHashMap<>();
-                    projectTasks.forEach((project, tasks) -> {
-                        formattedProjectTasks.put(project, tasks.stream().map(Task::toStringWithoutCheckbox).toList());
-                    });
+                    projectTasks.forEach((project, tasks) ->
+                            formattedProjectTasks.put(project, tasks.stream()
+                                    .map(Task::toStringWithoutCheckbox).toList()));
                     formattedTasks.put(formattedDeadline, formattedProjectTasks);
                 }
         );
@@ -163,7 +166,7 @@ public class TaskListService {
      * @return - list of tasks with this deadline
      */
     public Map<String, List<String>> getTasksForDeadline(LocalDate deadline) {
-        String deadlineStr = deadline.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        String deadlineStr = deadline.format(DateTimeFormatter.ofPattern(DATE_FORMAT));
         return getFormattedTasksByDeadlineAndProject().get(deadlineStr);
     }
 

@@ -2,6 +2,9 @@ package com.ortecfinance.tasklist;
 
 import java.time.LocalDate;
 
+/**
+ * Domain object for Tasks
+ */
 public final class Task {
     private final long id;
     private final String description;
