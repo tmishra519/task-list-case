@@ -106,6 +106,9 @@ public final class TaskConsoleController implements Runnable {
             String[] projectTask = subcommandRest[1].split(" ", 2);
             taskListService.addTask(projectTask[0], projectTask[1]);
         }
+        else {
+            error("add " + commandLine);
+        }
     }
 
     /**
